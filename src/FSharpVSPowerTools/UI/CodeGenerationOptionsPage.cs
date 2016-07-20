@@ -78,7 +78,5 @@ namespace FSharpVSPowerTools
 
             base.OnApply(e);
         }
-
     }
-
 }
