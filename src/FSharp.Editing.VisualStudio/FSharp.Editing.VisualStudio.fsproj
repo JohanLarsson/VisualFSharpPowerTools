@@ -67,6 +67,7 @@
   </Choose>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ItemGroup>
+    <None Include="Gui\BreadcrumbBar.xaml" />
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs">
     </Compile>
