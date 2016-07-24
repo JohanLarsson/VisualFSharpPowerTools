@@ -23,7 +23,7 @@ type BreadcrumbBarMargin(view: IWpfTextView) =
             if (parent :? Grid) then 
                 let grid = parent :?> Grid
                 grid.Children
-                |> Seq.cast<IWpfTextViewMargin>
+                |> Seq.cast<obj>
                 |> Seq.tryFind (fun m -> m.GetType().Name = "LeftMargin")
             else
                 None
