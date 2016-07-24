@@ -8,16 +8,8 @@ open System.Windows.Media
 open Microsoft.VisualStudio.Text.Editor
 open Microsoft.VisualStudio.Text
 
+open FSharp.Editing
 open FSharp.Editing.VisualStudio
-
-module Seq =
-    let ofType<'a when 'a : not struct> (col : System.Collections.IEnumerable) = 
-        seq {
-             for item in col do
-                match item with 
-                | :? 'a as a -> yield a
-                | _ -> ()
-        }
 
 type BreadcrumbBarVisual = FsXaml.XAML< @"Gui/BreadcrumbBar.xaml">
 
@@ -34,9 +26,10 @@ type BreadcrumbBarMargin(view: IWpfTextView) =
                 let grid = parent :?> Grid
                 grid.Children
                 |> Seq.ofType<IWpfTextViewMargin>
-                |> Seq.tryFind (fun m -> m.GetType().Name = "LeftMargin")
+                |> Seq.tryFind (fun m -> m.GetType().Name = "LeftMargin") // LeftMargin is internal I think
             else
                 None
+
         let actualWidthToLeftPaddingConverter = 
             { new IValueConverter with 
                 member x.Convert(value, _, _, _) =
