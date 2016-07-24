@@ -10,6 +10,15 @@ open Microsoft.VisualStudio.Text
 
 open FSharp.Editing.VisualStudio
 
+module Seq =
+    let ofType<'a when 'a : not struct> (col : System.Collections.IEnumerable) = 
+        seq {
+             for item in col do
+                match item with 
+                | :? 'a as a -> yield a
+                | _ -> ()
+        }
+
 type BreadcrumbBarVisual = FsXaml.XAML< @"Gui/BreadcrumbBar.xaml">
 
 type BreadcrumbBarMargin(view: IWpfTextView) =
@@ -18,12 +27,13 @@ type BreadcrumbBarMargin(view: IWpfTextView) =
     let tryBindLeftPadding =
         // Climbing the visual tree here, slight hack.
         // Potential for improvement but probably not an issue.
-        let parent = VisualTreeHelper.GetParent view.VisualElement 
+        let parent = VisualTreeHelper.GetParent view.VisualElement
+
         let leftMargin =
             if (parent :? Grid) then 
                 let grid = parent :?> Grid
                 grid.Children
-                |> Seq.cast<obj>
+                |> Seq.ofType<IWpfTextViewMargin>
                 |> Seq.tryFind (fun m -> m.GetType().Name = "LeftMargin")
             else
                 None
