@@ -47,8 +47,8 @@ type BreadcrumbBarMargin(view: IWpfTextView) =
             BindingOperations.SetBinding(visual, BreadcrumbBarMargin.LeftPaddingProperty, binding) |> ignore
 
         match leftMargin with
-            |Some x -> bindLeftPadding x
-            |None -> ()
+            | Some x -> bindLeftPadding x
+            | None -> ()
 
     do tryBindLeftPadding
 
