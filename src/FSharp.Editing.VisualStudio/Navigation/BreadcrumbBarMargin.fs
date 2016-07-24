@@ -12,20 +12,6 @@ open FSharp.Editing.VisualStudio
 
 type BreadcrumbBarVisual = FsXaml.XAML< @"Gui/BreadcrumbBar.xaml">
 
-// this should be a private nested class under BreadcrumbBarMargin
-// could not figure out how to write it.
-type ActualWidthToLeftPaddingConverter() =
-    interface IValueConverter with
-        member x.Convert(value, _, _, _)=
-            let left =
-                match value with
-                | :? float as d -> d
-                | _ -> 0.0
-            Thickness(left, 0., 0., 0.) :> _
-                 
-        member x.ConvertBack(_, _, _, _) =
-            failwithf "Only for one way bindings"
-
 type BreadcrumbBarMargin(view: IWpfTextView) =
     let visual = BreadcrumbBarVisual()
 
@@ -41,12 +27,23 @@ type BreadcrumbBarMargin(view: IWpfTextView) =
                 |> Seq.tryFind (fun m -> m.GetType().Name = "LeftMargin")
             else
                 None
+        let actualWidthToLeftPaddingConverter = 
+            { new IValueConverter with 
+                member x.Convert(value, _, _, _) =
+                    let left =
+                        match value with
+                        | :? float as d -> d
+                        | _ -> 0.0
+                    Thickness(left, 0., 0., 0.) |> box
+                member x.ConvertBack(_, _, _, _) =
+                    failwithf "Only for one way bindings"
+             }
 
         let bindLeftPadding (leftMargin: IWpfTextViewMargin) =
             let binding = Binding("ActualWidth") 
             binding.Source <- leftMargin.VisualElement
             binding.Mode <- BindingMode.OneWay
-            binding.Converter <- ActualWidthToLeftPaddingConverter()
+            binding.Converter <- actualWidthToLeftPaddingConverter
             BindingOperations.SetBinding(visual, BreadcrumbBarMargin.LeftPaddingProperty, binding) |> ignore
 
         match leftMargin with
@@ -58,10 +55,10 @@ type BreadcrumbBarMargin(view: IWpfTextView) =
     static member LeftPaddingProperty = DependencyProperty.RegisterAttached("LeftPadding", typeof<Thickness>, typeof<BreadcrumbBarMargin>, PropertyMetadata(Thickness(0.0, 0.0, 0.0, 0.0)))
     
     static member SetLeftPadding (element: UserControl, value : Thickness) = 
-        element.SetValue(BreadcrumbBarMargin.LeftPaddingProperty, value :> obj)
+        element.SetValue(BreadcrumbBarMargin.LeftPaddingProperty, value)
     
-    static member GetLeftPadding (element: UserControl) = 
-        element.GetValue(BreadcrumbBarMargin.LeftPaddingProperty) :?> Thickness
+    static member GetLeftPadding (element: UserControl) : Thickness = 
+        element.GetValue(BreadcrumbBarMargin.LeftPaddingProperty) :?> _
 
     interface IWpfTextViewMargin with
         member __.VisualElement = upcast visual
