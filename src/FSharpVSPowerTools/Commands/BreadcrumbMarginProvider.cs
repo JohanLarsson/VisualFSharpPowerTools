@@ -1,6 +1,9 @@
 ﻿namespace FSharpVSPowerTools
 {
     using System.ComponentModel.Composition;
+
+    using FSharp.Editing.VisualStudio.Navigation;
+
     using Microsoft.VisualStudio.Text.Editor;
     using Microsoft.VisualStudio.Utilities;
 
