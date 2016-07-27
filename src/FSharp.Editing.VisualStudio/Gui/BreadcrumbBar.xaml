@@ -27,8 +27,9 @@
     </UserControl.Resources>
 
     <Border Background="#FFE8E8EC">
-        <ItemsControl Margin="{Binding Path=(navigation:BreadcrumbBarMargin.LeftPadding), 
-                                       RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+        <!--<ItemsControl Margin="{Binding Path=(navigation:BreadcrumbBarMargin.LeftPadding), 
+                                       RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">-->
+        <ItemsControl ItemsSource="{Binding .}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Horizontal" />
