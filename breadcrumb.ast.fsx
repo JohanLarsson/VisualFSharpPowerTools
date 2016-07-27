@@ -19,6 +19,7 @@ type AstItem =
 | ModuleDecl of LongIdent * SynModuleDecls * AstChildren
 | Let of SynBinding * AstChildren
 | Exception of SynTypeDefnRepr
+| Lambda of SynExpr * AstChildren
   static member GetBreadCrumbStyle =
     function
     | Namespace(_) -> ()// ...
@@ -42,23 +43,92 @@ type AstItem =
         | SynPat.Named(_,ident,_,_,_) -> ident.idText |> String.prepend "let:"
         | SynPat.LongIdent(ident,idd,_,_,_,_) -> ident.Lid |> longIdentToString |> String.prepend "let:"
         | _ -> pattern.GetType().Name |> String.prepend "let:"
+    | Lambda(epxr, children) ->
+        "\ ->"
     | Exception(_) -> "exn???"
   static member GetChildren =
     function
-    | Namespace (_,children) -> children
-    | ModuleNs (_,children) -> children
-    | ModuleDecl (_,_,children) -> children
-    | Let (_,children) -> children
+    | Namespace (_,children)
+    | ModuleNs (_,children)
+    | ModuleDecl (_,_,children)
+    | Let (_,children)
+    | Lambda (_, children) 
+      -> children
     | Exception (_) -> Seq.empty
     
 and AstChildren = AstItem seq
-
-type SynBinding with
+type SynExpr with
   static member GetAstItems =
     function
-    | SynBinding.Binding(_,_,_,_,_,_,_,_,_,_,_,_) as x -> Seq.singleton (Let (x, Seq.empty))
+    | SynExpr.LetOrUse(_,_,bindings,_,_) -> bindings |> mapConcat SynBinding.GetAstItems
+    | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) -> Seq.empty
+    | SynExpr.Quote(operator, isRaw, quotedSynExpr, isFromQueryExpression, range) -> Seq.empty
+    | SynExpr.Const(constant, range) ->Seq.empty
+    | SynExpr.Typed(expr, typeSig, range) -> Seq.empty
+    | SynExpr.Tuple(exprs, commaRanges, range) -> Seq.empty
+    | SynExpr.ArrayOrList(isList, exprs, range) -> Seq.empty
+    | SynExpr.Record(baseInfo, copyInfo, recordFields, range) -> Seq.empty
+    | SynExpr.New(isProtected, typeName, expr, range) -> Seq.empty
+    | SynExpr.ObjExpr(objType, argOpt, bindings, extraImpls, newPos, range) -> Seq.empty
+    | SynExpr.While(spWhile, whileBody, doBody, range) -> doBody |> SynExpr.GetAstItems
+    | SynExpr.For(spFor, id, idBody, _, toBody, doBody, range) ->  doBody |> SynExpr.GetAstItems
+    | SynExpr.ForEach(spFor, seqExprOnly, isFromSource, pattern, enumExpr, bodyExpr, range) -> bodyExpr |> SynExpr.GetAstItems
+    | SynExpr.ArrayOrListOfSeqExpr(isList, elements, range) -> Seq.empty
+    | SynExpr.CompExpr(isArrayOrList, isNotNakedRefCell, expr, range) -> expr |> SynExpr.GetAstItems
+    | SynExpr.Lambda(fromMethod, inLambdaSeq, args, body, range) as x -> Seq.singleton (Lambda(x, body |> SynExpr.GetAstItems))
+    | SynExpr.MatchLambda(_, _, clauses, spBind, range) -> Seq.empty
+    | SynExpr.Match(spBind, matchExpr, clauses, isCexprExceptionMatch, range) -> Seq.empty
+    | SynExpr.Do(expr, range) -> expr |> SynExpr.GetAstItems
+    | SynExpr.Assert(expr, range) -> Seq.empty
+    | SynExpr.App(exprAtomicFlag, isInfix, funcExpr, argExpr, range) -> funcExpr |> SynExpr.GetAstItems
+    | SynExpr.TypeApp(expr, leftAngleRange, typeNames, commaRanges, rightAngleRange, typeArgs, range) -> Seq.empty
+    | SynExpr.TryWith(tryExpr, _, _, _, range, spTry, spWith) ->  Seq.empty
+    | SynExpr.TryFinally(tryExpr, finallyExpr, range, spTry, spFinally) ->  Seq.empty
+    | SynExpr.Lazy(expr, range) ->  Seq.empty
+    | SynExpr.Sequential(spSeq, isTrueSeq, expr1, expr2, range) ->  Seq.empty
+    | SynExpr.IfThenElse(exprGuard, exprThen, optionalExprElse, spIfToThen, isFromErrorRecovery, ifToThen, range) -> 
+      exprThen |> SynExpr.GetAstItems
+      |> Seq.append (optionalExprElse |> function | None -> Seq.empty | Some elseExpr -> elseExpr |> SynExpr.GetAstItems)
+    | SynExpr.Ident(_) ->  Seq.empty
+    | SynExpr.LongIdent(isOptional, longIdent, altNameRefCell, range) ->  Seq.empty
+    | SynExpr.LongIdentSet(dotId, expr, range) ->  Seq.empty
+    | SynExpr.DotGet(expr, rangeOfDot, dotId, range) ->  Seq.empty
+    | SynExpr.DotSet(expr, dotId, exprValue, range) ->  Seq.empty
+    | SynExpr.DotIndexedGet(expr, indexExprs, _, range) ->  Seq.empty
+    | SynExpr.DotIndexedSet(objectExpr, indexExprs, valueExpr, rangeOfLeftOfSet, rangeOfDot, range) -> Seq.empty
+    | SynExpr.NamedIndexedPropertySet(_, _, _, range) ->  Seq.empty
+    | SynExpr.DotNamedIndexedPropertySet(_, _, _, _, range) ->  Seq.empty
+    | SynExpr.TypeTest(expr, typeName, range) ->  Seq.empty
+    | SynExpr.Upcast(expr, typeSig, range) ->  Seq.empty
+    | SynExpr.Downcast(expr, typeName, range) ->  Seq.empty
+    | SynExpr.InferredUpcast(expr, range) ->  Seq.empty
+    | SynExpr.InferredDowncast(expr, range) ->  Seq.empty
+    | SynExpr.Null(range) ->  Seq.empty
+    | SynExpr.AddressOf(_, _, _, range) ->  Seq.empty
+    | SynExpr.TraitCall(_, _, _, range) ->  Seq.empty
+    | SynExpr.JoinIn(_, inPos, _, range) ->  Seq.empty
+    | SynExpr.ImplicitZero(range) ->  Seq.empty
+    | SynExpr.YieldOrReturn(_, expr, range) ->  Seq.empty
+    | SynExpr.YieldOrReturnFrom(_, expr, range) ->  Seq.empty
+    | SynExpr.LetOrUseBang(spBind, isUse, isFromSource, pattern, rhsExpr, bodyExpr, range) ->
+          bodyExpr |> SynExpr.GetAstItems
+    | SynExpr.DoBang(expr, range) ->   expr |> SynExpr.GetAstItems
+    | SynExpr.LibraryOnlyILAssembly(_, _, _, _, range) ->  Seq.empty
+    | SynExpr.LibraryOnlyStaticOptimization(_, _, _, range) ->  Seq.empty
+    | SynExpr.LibraryOnlyUnionCaseFieldGet(_, longId, _, range) ->  Seq.empty
+    | SynExpr.LibraryOnlyUnionCaseFieldSet(_, longId, _, _, range) ->  Seq.empty
+    | SynExpr.ArbitraryAfterError(debugStr, range) ->  Seq.empty
+    | SynExpr.FromParseError(expr, range) ->  Seq.empty
+    | SynExpr.DiscardAfterMissingQualificationAfterDot(expr, range) ->  Seq.empty
+    | SynExpr.Fixed(expr, _) -> expr |> SynExpr.GetAstItems
+and SynBinding with
+  static member GetAstItems =
+    function
+    | SynBinding.Binding(_,_,_,_,_,_,_,_,_,expr,_,_) as x -> 
+      Seq.singleton (Let (x, Seq.empty))
+      |> Seq.append (expr |> SynExpr.GetAstItems)
 
-type SynTypeDefn with
+and SynTypeDefn with
   static member GetAstItems =
     function
     | SynTypeDefn.TypeDefn(SynComponentInfo.ComponentInfo(_,_,_,_,_,_,_,_),typeDef,_,_) ->
