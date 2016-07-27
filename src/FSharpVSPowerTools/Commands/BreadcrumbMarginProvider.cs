@@ -26,7 +26,7 @@
         /// </returns>
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost wpfTextViewHost, IWpfTextViewMargin marginContainer)
         {
-            return new BreadcrumbBarMargin();
+            return new BreadcrumbBarMargin(wpfTextViewHost.TextView);
         }
     }
 }
