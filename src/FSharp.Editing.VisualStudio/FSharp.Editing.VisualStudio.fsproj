@@ -103,7 +103,8 @@
     <Compile Include="Navigation/NavigateToMetadataService.fs" />
     <Compile Include="Navigation/GoToDefinitionFilter.fs" />
     <Compile Include="Navigation/NoPeekDefinitionFilterProvider.fs" />
-    <Compile Include="Navigation\BreadcrumbBarMargin.fs" />
+    <Compile Include="Navigation/BreadcrumbBarMargin.fs" />
+    <Compile Include="Navigation/BreadcrumbBarMarginProvider.fs" />
     <Compile Include="Formatting/CodeFormattingServices.fs" />
     <Compile Include="Formatting/CodeFormattingCommands.fs" />
     <Compile Include="Formatting/FormatDocumentCommand.fs" />
