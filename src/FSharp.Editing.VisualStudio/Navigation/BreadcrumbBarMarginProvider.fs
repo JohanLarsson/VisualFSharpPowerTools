@@ -6,10 +6,8 @@ open Microsoft.VisualStudio.Utilities;
 
 [<Export(typeof<IWpfTextViewMarginProvider>)>]
 [<Name(FSharp.Editing.VisualStudio.Constants.BreadcrumbBarMarginName)>]
-[<Order(After = PredefinedMarginNames.Left)>]
 [<MarginContainer(PredefinedMarginNames.Top)>]
 [<ContentType("F#")>]
-//[<TextViewRole(PredefinedTextViewRoles.PrimaryDocument)>]
 type BreadcrumbMarginProvider() =
     interface IWpfTextViewMarginProvider with
         member x.CreateMargin(wpfTextViewHost, _) =

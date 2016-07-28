@@ -1,12 +1,6 @@
 ﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:navigation="clr-namespace:FSharp.Editing.VisualStudio.Navigation;assembly=FSharp.Editing.VisualStudio"
-             xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.12.0"
-             d:DesignHeight="25"
-             d:DesignWidth="600"
-             mc:Ignorable="d">
+             xmlns:ap="clr-namespace:FSharp.Editing.VisualStudio;assembly=FSharp.Editing.VisualStudio">
     <UserControl.Resources>
         <Style x:Key="CrumbButtonStyle"  TargetType="{x:Type Button}">
             <Setter Property="Margin" Value="4,0" />
@@ -28,11 +22,10 @@
     </UserControl.Resources>
 
     <Border Background="#FFE8E8EC">
-        <!--<ItemsControl Margin="{Binding Path=(navigation:BreadcrumbBarMargin.LeftPadding), 
+        <ItemsControl Margin="{Binding Path=(ap:LeftMargin.Padding), 
                                        RelativeSource={RelativeSource FindAncestor, 
-                                                                      AncestorType={x:Type navigation:BreadcrumbBarMargin}}}" 
-                      ItemsSource="{Binding .}">-->
-        <ItemsControl ItemsSource="{Binding .}">        
+                                                                      AncestorType={x:Type UserControl}}}" 
+                      ItemsSource="{Binding DataContext}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Horizontal" />
