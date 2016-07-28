@@ -70,6 +70,7 @@
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs">
     </Compile>
+    <Compile Include="Gui\AttachedProperties.fs" />
     <Resource Include="Gui\CommonResources.xaml" />
     <Compile Include="Gui\CommonResources.xaml.fs" />
     <Resource Include="Gui\RenameDialog.xaml" />
